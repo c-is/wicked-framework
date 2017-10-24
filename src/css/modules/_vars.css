@@ -1,0 +1,25 @@
+/* Fonts */
+$font-main: 'Bodoni', 'Bodoni Std', 'Bodoni MT', 'Marion', 'Baskerville Old Face', 'Baskerville', 'Times New Roman MT Std-Cond', 'Times New Roman', serif;
+$font-sub: 'Gravity', 'Futura', 'Helvetica', sans-serif;
+$font-head: 'Snell Roundhand', 'Futura', 'Helvetica', serif;
+
+/* Colours */
+$colour-main: #333;
+$colour-sub: #696969;
+$colour-sub2: #b0afaf;
+$colour-bg: #f7f7f7;
+
+/* Sizes */
+$size-hd: 1600px;
+$size-desktop: 1000px;
+$size-tablet: 660px;
+$size-phone: 659px;
+
+$maxWidth: 1140px;
+$wrapperSpace: 3.333rem;
+
+$mod: 24px;
+$gutter: 2 * $mod;
+$footer-height: 2 * $mod;
+
+$elements: section, slider, hero, infobar, btn, header, footer, nav, side-panel, filter, menu, lightbox, cookies, loader, rotate-device, browsehappy;

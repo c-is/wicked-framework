@@ -1,0 +1,21 @@
+.article {
+}
+
+.article-list {
+  @lost flexbox flex;
+
+  lost-center: 90vw 1vw flex;
+  lost-flex-container: row;
+  lost-align: center;
+
+  &__item {
+    lost-column: 1/3 flex;
+
+    position: relative;
+    text-align: center;
+  }
+
+  &__title {
+    font-size: 2.5rem;
+  }
+}

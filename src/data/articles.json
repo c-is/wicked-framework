@@ -1,0 +1,32 @@
+[
+  {
+    "title": "The Siddelays",
+    "date": "31.05.2017",
+    "url": "/siddeleys",
+    "image": "/assets/images/articles/siddeleys.jpg"
+  },
+  {
+    "title": "The Smiths",
+    "date": "31.05.2017",
+    "url": "/days-in-warsaw",
+    "image": "/assets/images/articles/smiths.jpg"
+  },
+  {
+    "title": "Blueboy",
+    "date": "31.05.2017",
+    "url": "/blueboy",
+    "image": "/assets/images/articles/blueboy.jpg"
+  },
+  {
+    "title": "Aztec Camera",
+    "date": "31.05.2017",
+    "url": "/swiety-szczyt",
+    "image": "/assets/images/articles/aztec-camera.jpg"
+  },
+  {
+    "title": "The Jun Brides",
+    "date": "31.05.2017",
+    "url": "/june-brides",
+    "image": "/assets/images/articles/june-brides.jpg"
+  }
+]
