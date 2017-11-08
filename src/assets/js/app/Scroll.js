@@ -6,7 +6,7 @@ import Hanlder from './Handler';
 export default class Scroll extends Hanlder {
   static destroyScroll(events) {
     $(window).off('scroll', Scroll.onScroll);
-    
+
     Scroll.cache = {};
     Scroll.destroy();
 
@@ -28,10 +28,10 @@ export default class Scroll extends Hanlder {
   }
   saveAnimationCache() {
     const animations = [];
-    $('[data-animation]').each((i, el) => {
-      const $el = $(el);
+    $('[data-animation]').each((i, element) => {
+      const $el = $(element);
       animations.push({
-        el: el,
+        el: element,
         start: $el.data('start') || 0.1,
         y: $el.offset().top,
         height: $el.height(),
@@ -52,7 +52,7 @@ export default class Scroll extends Hanlder {
       for (let i = 0; i < this.cache.animations.length; i += 1) {
         const item = this.cache.animations[i];
         const itemY = !this.ignoreCache ? item.y : $(item.el).offset().top;
-        const yBottom = st + (1 - item.start) * window.innerHeight;
+        const yBottom = st + ((1 - item.start) * window.innerHeight);
         const itemHeight = !this.ignoreCache ? item.height : $(item.el).height();
 
         if (!item.done && itemY <= yBottom && itemY + itemHeight >= st) {

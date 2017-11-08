@@ -2,15 +2,16 @@ import gulp from 'gulp';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import browserSync from 'browser-sync';
 import del from 'del';
-import { stream as wiredep } from 'wiredep';
 import webpackConfig from './webpack.config';
+
+const bs = browserSync.create();
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
 const pkg = require('./package.json');
 const gutil = require('gutil');
 const chalk = require('chalk');
-const webpack = require('webpack-stream');
+const webpack = require('webpack');
 const nunjucksRender = require('gulp-nunjucks-render');
 const lost = require('lost');
 const center = require('postcss-center');
@@ -24,6 +25,8 @@ const assets = require('postcss-assets');
 const rucksack = require('rucksack-css');
 const functions = require('postcss-functions');
 
+const compiler = webpack(webpackConfig);
+
 const paths = {
   buildRoot: 'html',
   buildAssets: 'html/assets',
@@ -32,7 +35,7 @@ const paths = {
   tmp: '.tmp',
 };
 
-const projectName = 'Suade';
+const projectName = '';
 
 const banner = ['/**',
   ' * <%= pkg.name %> - <%= pkg.title %>',
@@ -109,23 +112,12 @@ gulp.task('html', ['postcss', 'nunjucks'], () => {
 });
 
 gulp.task('replace', () => {
-  gulp.src([`${paths.tmp}/**/*.html`])
-    .pipe(gulp.dest(paths.tmp));
+  gulp.src([`${paths.tmp}/**/*.js`])
+    .pipe(gulp.dest(paths.buildRoot));
 });
 
-gulp.task('nunjucks', () => {
-  // nunjucksRender.nunjucks.configure(`${paths.src}/template/`, {
-  //  tags: {
-  //    blockStart: '<%--',
-  //    blockEnd: '--%>',
-  //    variableStart: '{{%',
-  //    variableEnd: '%}}',
-  //    commentStart: '<#',
-  //    commentEnd: '#>'
-  //  }
-  // });
-
-  return gulp.src(`${paths.srcRoot}/template/pages/**/*.html`)
+gulp.task('nunjucks', () => (
+  gulp.src(`${paths.srcRoot}/template/pages/**/*.html`)
     .pipe($.plumber({
       errorHandler: onError,
     }))
@@ -137,11 +129,11 @@ gulp.task('nunjucks', () => {
       },
       path: [`${paths.srcRoot}/template/`],
     })).on('error', gutil.log)
-    .pipe(gulp.dest(paths.tmp));
-});
+    .pipe(gulp.dest(paths.tmp))
+));
 
-gulp.task('images', () => {
-  return gulp.src(`${paths.srcAssets}/images/**/*`)
+gulp.task('images', () => (
+  gulp.src(`${paths.srcAssets}/images/**/*`)
     .pipe($.if($.if.isFile, $.cache($.imagemin({
       progressive: true,
       interlaced: true,
@@ -153,63 +145,72 @@ gulp.task('images', () => {
       .on('error', (err) => {
         console.log(err);
       })))
-    .pipe(gulp.dest(`${paths.buildAssets}/images`));
-});
+    .pipe(gulp.dest(`${paths.buildAssets}/images`))
+));
 
-gulp.task('fonts', () => {
-  return gulp.src(`${paths.srcAssets}/fonts/**/*`)
+gulp.task('fonts', () => (
+  gulp.src(`${paths.srcAssets}/fonts/**/*`)
     .pipe(gulp.dest(`${paths.tmp}/assets/fonts`))
-    .pipe(gulp.dest(`${paths.buildAssets}/fonts`));
+    .pipe(gulp.dest(`${paths.buildAssets}/fonts`))
+));
+
+gulp.task('webpack', (callback) => {
+  webpack(webpackConfig, (err, stats) => {
+    if (err) throw new gutil.PluginError('webpack', err);
+    gutil.log('[webpack]', stats.toString({
+      // output options
+    }));
+    callback();
+  });
+  // return gulp.src(`${paths.srcAssets}/js/scripts.js`)
+  //   .pipe($.plumber({
+  //     errorHandler: onError,
+  //   }))
+  //   .pipe(webpack(webpackConfig)).on('error', gutil.log)
+  //   .pipe(gulp.dest(`${paths.tmp}/assets/js`))
+  //   // .pipe($.uglify())
+  //   .pipe(gulp.dest(`${paths.buildAssets}/js/`));
 });
 
-gulp.task('webpack', () => {
-  return gulp.src(`${paths.srcAssets}/js/scripts.js`)
-    .pipe($.plumber({
-      errorHandler: onError,
-    }))
-    .pipe(webpack(webpackConfig)).on('error', gutil.log)
-    .pipe(gulp.dest(`${paths.tmp}/assets/js`))
-    .pipe($.uglify())
-    .pipe(gulp.dest(`${paths.buildAssets}/js/`));
-});
-
-gulp.task('js', () => {
-  return gulp.src([
-    !paths.srcAssets + '/js/scripts.js',
-    paths.srcAssets + '/js/**/*.js',
-  ], {
-    dot: true,
-  })
-    .pipe($.uglify())
-    .pipe(gulp.dest(`${paths.buildAssets}/js/`));
-});
-
-gulp.task('scripts', () => {
-  return gulp.src(`${paths.srcAssets}/js/scripts.js`)
-    .pipe($.rename('scripts.min.js'))
-    .pipe(gulp.dest(`${paths.tmp}/assets/js`))
-    .pipe($.uglify())
-    .pipe(gulp.dest(`${paths.buildAssets}/js`));
-});
-
-gulp.task('extras', () => {
-  return gulp.src([
+gulp.task('extras', () => (
+  gulp.src([
     paths.srcRoot + '/*.*',
     !paths.srcRoot + '/template/*',
   ], {
     dot: true,
-  }).pipe(gulp.dest(paths.buildRoot));
-});
+  }).pipe(gulp.dest(paths.buildRoot))
+));
 
 gulp.task('clean', del.bind(null, ['.tmp', 'html']));
 
 gulp.task('serve', ['nunjucks', 'postcss', 'fonts'], () => {
-  browserSync({
-    // notify: false,
-    // proxy: "192.168.10.10/",
-    port: 9000,
+  // browserSync({
+  //   // notify: false,
+  //   // proxy: "192.168.10.10/",
+  //   port: 9000,
+  //   server: {
+  //     baseDir: [paths.tmp, paths.srcRoot],
+  //     routes: {
+  //       '/node_modules': 'node_modules',
+  //     },
+  //   },
+  // });
+
+  const webpackDevMiddleware = require('webpack-dev-middleware')(compiler, {
+    publicPath: webpackConfig.output.publicPath,
+    stats: webpackConfig.stats,
+  });
+
+  bs.init({
+    port: process.env.PORT || 9000,
+    ui: { port: Number(process.env.PORT || 9000) + 1 },
     server: {
       baseDir: [paths.tmp, paths.srcRoot],
+      middleware: [
+        webpackDevMiddleware,
+        require('webpack-hot-middleware')(compiler),
+        require('connect-history-api-fallback')(),
+      ],
       routes: {
         '/node_modules': 'node_modules',
       },
@@ -257,26 +258,14 @@ gulp.task('serve:test', () => {
   gulp.watch('test/spec/**/*.js', ['lint:test']);
 });
 
-// inject bower components
-gulp.task('wiredep', () => {
-  gulp.src(`${paths.srcRoot}/css/*.css`)
-    .pipe(wiredep({
-      ignorePath: /^(\.\.\/)+/,
-    }))
-    .pipe(gulp.dest(`${paths.srcRoot}/css`));
-
-  gulp.src(`${paths.srcRoot}/template/layout/*.html`)
-    .pipe(wiredep({
-      ignorePath: /^(\.\.\/)*\.\./,
-    }))
-    .pipe(gulp.dest(`${paths.srcRoot}/template/layout`));
-});
-
-gulp.task('build', ['postcss', 'images', 'fonts', 'webpack', 'html', 'extras'], () => {
+gulp.task('build', ['postcss', 'images', 'fonts', 'webpack', 'html', 'extras', 'replace'], () => {
+  global.HMR = !process.argv.includes('--no-hmr');
   return gulp.src(`${paths.srcRoot}/**/*`).pipe($.size({ title: 'build', gzip: true }));
 });
 
+gulp.task('start', ['postcss', 'webpack']);
+
 gulp.task('default', () => {
-  gulp.start('build');
+  gulp.start('start');
   gulp.start('serve');
 });

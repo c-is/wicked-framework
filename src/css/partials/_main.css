@@ -27,3 +27,7 @@
   position: relative;
   z-index: 2;
 }
+
+.roman-converter {
+  font-size: 4rem;
+}

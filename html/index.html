@@ -7,7 +7,7 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge"> 
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>{% block title %}{% endblock %} | {{ project_name }}</title>
+		<title>home | </title>
 		<meta name="description" content="" />
 		<meta name="keywords" content="" />
 		<meta name="author" content="Yugo Ito" />
@@ -15,7 +15,7 @@
 		<link rel="stylesheet" href="/style.css">
 
 	</head>
-	<body class="{% block pageid %} {% endblock %}">
+	<body class="home">
 		<!--[if lt IE 7]>
 		<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
@@ -25,7 +25,15 @@
 		</header>
 
 		<div class="container" id="container">
-			{% block content %} {% endblock %}
+			
+
+<main class="main main--home clear" id="main" role="main" data-page="Home" data-page-title="Home">
+	<article class="content content--home" id="content" data-component="Home">
+    <div class="article-list" data-template="Home"></div>
+	</article>
+</main>
+
+
 		</div>
 
 		<footer class="footer clear" role="contentinfo">
@@ -36,6 +44,7 @@
 		
 		<script src="/assets/js/main.js"></script>
 		
-		{% block scripts %} {% endblock %}
+		 
+
 	</body>
 </html>

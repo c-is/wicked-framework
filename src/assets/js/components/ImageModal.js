@@ -1,25 +1,18 @@
 import $ from 'jquery';
 import { TweenMax } from 'gsap';
 import Hammer from 'hammerjs';
-import { browserDetect } from '../app/Globals.js';
-
-let adjustScale = 1;
-let adjustDeltaX = 0;
-let adjustDeltaY = 0;
-let currentScale = 0;
-let currentDeltaX = 0;
-let currentDeltaY = 0;
+import { browserDetect } from '../app/Globals';
 
 export default class ImageModal {
   constructor(props) {
     this.view = props.view;
 
-    this.el;
-    this.nav;
+    this.el = '';
+    this.nav = '';
+    this.hammer = '';
     this.imageId = 0;
     this.images = [];
     this.activated = false;
-    this.hammer;
 
     this.events();
   }
@@ -78,16 +71,17 @@ export default class ImageModal {
         this.view.removeChild(this.el);
       },
     });
-  };
-  show = () => {
-    return new Promise((resolve) => {
+  }
+  show = () => (
+    new Promise((resolve) => {
       TweenMax.to(this.el, 0.4, {
         autoAlpha: 1,
         onComplete: () => {
           resolve();
         },
-    });
-  }
+      });
+    })
+  )
   showNav = () => {
     if (browserDetect().mobile && !this.activated) {
       TweenMax.to(this.nav, 0.5, {
@@ -131,7 +125,7 @@ export default class ImageModal {
 
     this.show().then(() => {
       this.showNav();
-    })
+    });
 
     this.el.addEventListener('click', this.closeImage);
   }

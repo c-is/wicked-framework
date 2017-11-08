@@ -46,7 +46,7 @@ export default class Trigger {
     this.timeout = null;
   }
 
-  animateOut = (callback) => {
+  animateOut = () => {
     const scrollPos = $(window).scrollTop();
     const contentHeight = $(content).offset().top;
     const fadeDirection = (scrollPos > (contentHeight / 2)) ? 100 : -100;
@@ -63,7 +63,6 @@ export default class Trigger {
         },
       });
     });
-
   }
 
   animateIn = (backTo) => {

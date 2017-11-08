@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import imagesLoaded from 'imagesloaded';
 import { TweenMax } from 'gsap';
-import async from 'async';
 import Trigger from './Trigger';
 import Scroll from './Scroll';
 
@@ -27,13 +26,13 @@ export default class Page {
     this.globalEvents();
 
     this.loadTemplate({ id: defaultUrl }).then(() => {
+      this.loadComponent();
       this.loadPage();
       this.preLoad();
       this.trigger = new Trigger();
       this.scroll = new Scroll();
       Trigger.setHistory();
     });
-
   }
 
   globalEvents() {
@@ -44,27 +43,15 @@ export default class Page {
     });
   }
 
-  getTemplate = (obj) => {
+  getTemplate(obj) {
     return new Promise((resolve) => {
       $.getJSON(obj.model, (data) => {
         this.template = new Templates[obj.name](obj.$el, data, obj.options);
       })
         .done(() => {
           const renderData = this.template.render();
-          async.series([
-            (callback) => {
-              obj.$el.html(renderData.v);
-              callback(null, 'one');
-            },
-            (callback) => {
-              this.templates.push(this.template);
-              callback(null, 'two');
-            },
-            (callback) => {
-              resolve();
-              callback(null, 'three');
-            },
-          ]);
+          this.templates.push(this.template);
+          resolve(renderData.v);
         })
         .fail(() => {
           console.log('error');
@@ -85,45 +72,45 @@ export default class Page {
           TweenMax.set($template, { opacity: 0 });
 
           if (Templates[templateName] !== undefined) {
-            const options = $template.data('options');
+            const TempOptions = $template.data('options');
 
             const models = new Model({ slag: id });
-            const model = models[templateName]();
+            const tempModel = models[templateName]();
 
-            this.getTemplate({ $el: $template, name: templateName, options: options, model: model }).then(() => {
+            this.getTemplate({
+              $el: $template,
+              name: templateName,
+              options: TempOptions,
+              model: tempModel,
+            }).then((data) => {
+              $template.html(data);
+              TweenMax.to($template, timingIn, { opacity: 1 });
 
               if (i === $templates.length - 1) {
                 resolve();
-                TweenMax.to($template, timingIn, { opacity: 1 });
               }
-            })
-
+            });
           } else {
             window.console.warn('There is no "%s" template!', templateName);
-
             if (i === $templates.length - 1) {
               resolve();
-              TweenMax.to($template, timingIn, { opacity: 1 });
             }
           }
-        }   
+        }
       } else {
         resolve();
       }
     });
-
   }
 
-  loadPage = () => {
+  loadPage() {
     const pageName = this.$view.data('page');
 
-    $('body').removeClass((index, className) => {
-      return (className.match(/(^|\s)is-\S+/g) || []).join(' ');
-    });
+    $('body').removeClass((index, className) => (className.match(/(^|\s)is-\S+/g) || []).join(' '));
     $('body').addClass(`is-${pageName.toLowerCase()}`);
   }
 
-  loadComponent = () => {
+  loadComponent() {
     const $components = this.$view.parent().find('[data-component]');
 
     for (let i = $components.length - 1; i >= 0; i -= 1) {
@@ -141,12 +128,8 @@ export default class Page {
     }
   }
 
-  loaderIn = (e) => {
-
-  }
-
-  loaderOut = () => {
-    return new Promise((resolve) => {
+  loaderOut = () => (
+    new Promise((resolve) => {
       TweenMax.to('.loader__name', timingOut, {
         autoAlpha: 0,
         y: '10%',
@@ -155,9 +138,9 @@ export default class Page {
         },
       });
     })
-  }
+  )
 
-  pageTransition = (e, back) => {
+  pageTransition(e, back) {
     e.preventDefault();
 
     const event = (!back) ? e : '';
@@ -165,28 +148,28 @@ export default class Page {
 
     slag.replace(/\//g, '');
 
-    this.trigger.animateOut().then(() => {
-      new Promise((resolve) => {
+    this.trigger.animateOut()
+      .then(() => {
         if (!back) Trigger.setHistory(event);
         this.destroy();
-        // this.loaderIn(event);
-
-        resolve();
-      }).then(() => {
-        this.trigger.load().then(() => {
-          this.trigger.render();
-          this.$view = $('.main');
-
-          this.loaderOut().then(() => {
-            this.loadPage();
-            this.loadTemplate({ id: slag });
-          });
-        });
-      }).catch((error) => {
+        return this.trigger.load();
+      })
+      .then(() => {
+        this.trigger.render();
+        this.$view = $('.main');
+        return this.loadTemplate({ id: slag });
+      })
+      .then(() => {
+        this.loadPage();
+        return this.preLoad();
+      })
+      .then(() => {
+        this.loaderOut();
+      })
+      .catch((error) => {
         // console.log(error);
         console.log('Error!');
       });
-    });
   }
 
   onState() {
@@ -234,7 +217,7 @@ export default class Page {
     }
   }
 
-  preLoad = () => {
+  preLoad() {
     const loadingImages = imagesLoaded(this.$view.find('.js-preload').toArray(), { background: true });
     let images = [];
 

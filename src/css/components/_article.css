@@ -8,6 +8,8 @@
   lost-flex-container: row;
   lost-align: center;
 
+  display: none;
+
   &__item {
     lost-column: 1/3 flex;
 
