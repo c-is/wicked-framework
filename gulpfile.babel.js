@@ -35,7 +35,7 @@ const paths = {
   tmp: '.tmp',
 };
 
-const projectName = '';
+const projectName = 'C is';
 
 const banner = ['/**',
   ' * <%= pkg.name %> - <%= pkg.title %>',
@@ -112,7 +112,12 @@ gulp.task('html', ['postcss', 'nunjucks'], () => {
 });
 
 gulp.task('replace', () => {
-  gulp.src([`${paths.tmp}/**/*.js`])
+  const options = {
+    searchPath: [`${paths.tmp}/**/*.js`, `${paths.srcRoot}/data/**/*`],
+  };
+  gulp.src([`${paths.tmp}/**/*.js`, `${paths.srcRoot}/**/*.json`])
+    .pipe($.useref(options))
+    .pipe($.if('**/*.js', $.uglify()))
     .pipe(gulp.dest(paths.buildRoot));
 });
 
@@ -196,21 +201,21 @@ gulp.task('serve', ['nunjucks', 'postcss', 'fonts'], () => {
   //   },
   // });
 
-  const webpackDevMiddleware = require('webpack-dev-middleware')(compiler, {
-    publicPath: webpackConfig.output.publicPath,
-    stats: webpackConfig.stats,
-  });
+  // const webpackDevMiddleware = require('webpack-dev-middleware')(compiler, {
+  //   publicPath: webpackConfig.output.publicPath,
+  //   stats: webpackConfig.stats,
+  // });
 
-  bs.init({
+  browserSync({
     port: process.env.PORT || 9000,
     ui: { port: Number(process.env.PORT || 9000) + 1 },
     server: {
       baseDir: [paths.tmp, paths.srcRoot],
-      middleware: [
-        webpackDevMiddleware,
-        require('webpack-hot-middleware')(compiler),
-        require('connect-history-api-fallback')(),
-      ],
+      // middleware: [
+      //   webpackDevMiddleware,
+      //   require('webpack-hot-middleware')(compiler),
+      //   require('connect-history-api-fallback')(),
+      // ],
       routes: {
         '/node_modules': 'node_modules',
       },
@@ -218,7 +223,7 @@ gulp.task('serve', ['nunjucks', 'postcss', 'fonts'], () => {
   });
 
   gulp.watch([
-    '.tmp/**/*.html',
+    `${paths.tmp}/**/*.html`,
     `${paths.srcAssets}/js/**/*.js`,
     `${paths.srcAssets}/images/**/*`,
     `${paths.srcAssets}/fonts/**/`,
